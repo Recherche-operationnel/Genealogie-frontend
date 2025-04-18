@@ -1,25 +1,152 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as go from 'gojs';
 import { FaUserPlus, FaUserFriends, FaChild, FaSearch, FaSitemap, FaInfoCircle } from 'react-icons/fa';
-
-// Définition des interfaces directement dans le fichier
-interface PersonNode {
-  key: number;
-  nom: string;
-  genre: 'M' | 'F';
-  dateNaissance: string;
-  photo: string;
-  details?: string;
-}
-
-interface FamilyRelation {
-  from: number;
-  to: number;
-}
+import { PersonNode, FamilyRelation } from '../types/FamilyTypes';
+import { AddChildForm } from '../components/FamilyTree/AddChildForm';
+import { AddPersonForm } from '../components/FamilyTree/AddPersonForm';
+import { AddSpouseForm } from '../components/FamilyTree/AddSpouseForm';
 
 function CreateTree() {
   const diagramRef = useRef<HTMLDivElement>(null);
   const [selectedNode, setSelectedNode] = useState<PersonNode | null>(null);
+  const [showAddPersonForm, setShowAddPersonForm] = useState(false);
+  const [showAddSpouseForm, setShowAddSpouseForm] = useState(false);
+  const [showAddChildForm, setShowAddChildForm] = useState(false);
+  const [diagramData, setDiagramData] = useState<{
+    nodes: PersonNode[];
+    links: FamilyRelation[];
+  }>({
+    nodes: [
+      { 
+        key: 1, 
+        nom: "Jean Dupont", 
+        genre: "M", 
+        dateNaissance: "1960", 
+        photo: "https://placekitten.com/100/100",
+        details: "Né à Paris, médecin"
+      },
+      { 
+        key: 2, 
+        nom: "Marie Martin", 
+        genre: "F", 
+        dateNaissance: "1962", 
+        photo: "https://placekitten.com/101/101",
+        details: "Née à Lyon, architecte"
+      },
+      { 
+        key: 3, 
+        nom: "Pierre Dupont", 
+        genre: "M", 
+        dateNaissance: "1985", 
+        photo: "https://placekitten.com/102/102",
+        details: "Né à Marseille, ingénieur"
+      },
+      { 
+        key: 4, 
+        nom: "Sophie Dupont", 
+        genre: "F", 
+        dateNaissance: "1988", 
+        photo: "https://placekitten.com/103/103",
+        details: "Née à Bordeaux, avocate"
+      }
+    ],
+    links: [
+      { from: 1, to: 2, type: "spouse" },
+      { from: 1, to: 3 },
+      { from: 1, to: 4 },
+      { from: 2, to: 3 },
+      { from: 2, to: 4 }
+    ]
+  });
+
+  const diagramInstance = useRef<go.Diagram | null>(null);
+
+  // Fonction pour mettre à jour le diagramme
+  const updateDiagram = (nodes: PersonNode[], links: FamilyRelation[]) => {
+    if (diagramInstance.current) {
+      diagramInstance.current.model = new go.GraphLinksModel({
+        nodeDataArray: nodes,
+        linkDataArray: links
+      });
+    }
+  };
+
+  // Handler pour ajouter une nouvelle personne
+  const handleAddPerson = (newPerson: PersonNode) => {
+    const updatedNodes = [...diagramData.nodes, newPerson];
+    setDiagramData(prev => ({
+      ...prev,
+      nodes: updatedNodes
+    }));
+    updateDiagram(updatedNodes, diagramData.links);
+    setShowAddPersonForm(false);
+  };
+
+  // Handler pour ajouter un conjoint
+  const handleAddSpouse = (spouseData: PersonNode, existingPersonId: number) => {
+    const newSpouseId = Math.max(...diagramData.nodes.map(n => n.key), 0) + 1;
+    const newSpouse = { ...spouseData, key: newSpouseId };
+    
+    const updatedNodes = [...diagramData.nodes, newSpouse];
+    const updatedLinks = [...diagramData.links, {
+      from: existingPersonId,
+      to: newSpouseId,
+      type: "spouse"
+    }];
+    
+    setDiagramData({
+      nodes: updatedNodes,
+      links: updatedLinks
+    });
+    updateDiagram(updatedNodes, updatedLinks);
+    setShowAddSpouseForm(false);
+  };
+
+  // Handler pour ajouter un enfant
+  const handleAddChild = (childData: PersonNode, parentIds: number[]) => {
+    const newChildId = Math.max(...diagramData.nodes.map(n => n.key), 0) + 1;
+    const newChild = { ...childData, key: newChildId };
+    
+    const updatedNodes = [...diagramData.nodes, newChild];
+    const updatedLinks = [...diagramData.links];
+    
+    parentIds.forEach(parentId => {
+      updatedLinks.push({ from: parentId, to: newChildId });
+    });
+    
+    setDiagramData({
+      nodes: updatedNodes,
+      links: updatedLinks
+    });
+    updateDiagram(updatedNodes, updatedLinks);
+    setShowAddChildForm(false);
+  };
+
+  const handleAddPersonClick = () => {
+    setShowAddPersonForm(true);
+    setShowAddSpouseForm(false);
+    setShowAddChildForm(false);
+  };
+
+  const handleAddSpouseClick = () => {
+    if (!selectedNode) {
+      alert("Veuillez sélectionner une personne à laquelle ajouter un conjoint");
+      return;
+    }
+    setShowAddSpouseForm(true);
+    setShowAddPersonForm(false);
+    setShowAddChildForm(false);
+  };
+
+  const handleAddChildClick = () => {
+    if (!selectedNode) {
+      alert("Veuillez sélectionner au moins un parent");
+      return;
+    }
+    setShowAddChildForm(true);
+    setShowAddPersonForm(false);
+    setShowAddSpouseForm(false);
+  };
 
   useEffect(() => {
     if (!diagramRef.current) return;
@@ -35,13 +162,15 @@ function CreateTree() {
       "undoManager.isEnabled": true,
       layout: $(go.TreeLayout, {
         angle: 90,
-        layerSpacing: 60,
-        nodeSpacing: 30,
-        arrangement: go.TreeLayout.ArrangementVertical
+        layerSpacing: 70,
+        nodeSpacing: 40,
+        alternateAngle: 0,
+        alternateAlignment: go.TreeLayout.AlignmentStart,
+        alternateNodeSpacing: 20
       }),
     });
   
-    // Template des nœuds (cartes circulaires)
+    // Template des nœuds
     diagram.nodeTemplate = $(
       go.Node,
       "Spot",
@@ -105,8 +234,7 @@ function CreateTree() {
       )
     );
     
-  
-    // Template des liens (hiérarchiques)
+    // Template des liens
     diagram.linkTemplate = $(
       go.Link,
       {
@@ -116,83 +244,38 @@ function CreateTree() {
         layerName: "Background",
         selectable: false
       },
-      $(go.Shape, { 
-        strokeWidth: 2,
-        stroke: "#4A5568",
-        strokeDashArray: [0, 0] 
-      }),
-      $(go.Shape, { 
-        toArrow: "Standard", 
-        stroke: "#4A5568", 
-        fill: "#4A5568" 
+      $(go.Shape,
+        new go.Binding("stroke", "", d => {
+          if (d.type === "spouse") return "#A855F7";
+          if (d.type === "sibling") return "#CBD5E0";
+          return "#4A5568";
+        }),
+        new go.Binding("strokeDashArray", "", d => {
+          if (d.type === "spouse") return [4, 4];
+          if (d.type === "sibling") return [1, 4];
+          return [0, 0];
+        }),
+        { strokeWidth: 2 }
+      ),
+      $(go.Shape, {
+        toArrow: "Standard",
+        stroke: null,
+        fill: "#4A5568"
       })
     );
-  
-    // Données de démonstration avec typage explicite
-    const nodeData: PersonNode[] = [
-      { 
-        key: 1, 
-        nom: "Jean Dupont", 
-        genre: "M", 
-        dateNaissance: "1960", 
-        photo: "https://placekitten.com/100/100",
-        details: "Né à Paris, médecin"
-      },
-      { 
-        key: 2, 
-        nom: "Marie Martin", 
-        genre: "F", 
-        dateNaissance: "1962", 
-        photo: "https://placekitten.com/101/101",
-        details: "Née à Lyon, architecte"
-      },
-      { 
-        key: 3, 
-        nom: "Pierre Dupont", 
-        genre: "M", 
-        dateNaissance: "1985", 
-        photo: "https://placekitten.com/102/102",
-        details: "Né à Marseille, ingénieur"
-      },
-      { 
-        key: 4, 
-        nom: "Sophie Dupont", 
-        genre: "F", 
-        dateNaissance: "1988", 
-        photo: "https://placekitten.com/103/103",
-        details: "Née à Bordeaux, avocate"
-      }
-    ];
-
-    const linkData: FamilyRelation[] = [
-      { from: 1, to: 3 },
-      { from: 1, to: 4 },
-      { from: 2, to: 3 },
-      { from: 2, to: 4 }
-    ];
-
+    
     diagram.model = new go.GraphLinksModel({
-      nodeDataArray: nodeData,
-      linkDataArray: linkData
+      nodeDataArray: diagramData.nodes,
+      linkDataArray: diagramData.links
     });
+
+    diagramInstance.current = diagram;
   
     return () => {
       if (diagram) diagram.div = null;
     };
   }, []);
   
-  const handleAddPerson = () => {
-    console.log("Ajouter une personne");
-  };
-
-  const handleAddSpouse = () => {
-    console.log("Ajouter un conjoint");
-  };
-
-  const handleAddChild = () => {
-    console.log("Ajouter un enfant");
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-50 min-h-screen">
       <div className="flex gap-6 flex-col lg:flex-row">
@@ -213,7 +296,7 @@ function CreateTree() {
             
             <div className="space-y-4">
               <button 
-                onClick={handleAddPerson}
+                onClick={handleAddPersonClick}
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-300 flex items-center justify-center space-x-2 shadow-md"
               >
                 <FaUserPlus className="text-lg" />
@@ -221,7 +304,7 @@ function CreateTree() {
               </button>
               
               <button 
-                onClick={handleAddSpouse}
+                onClick={handleAddSpouseClick}
                 className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition duration-300 flex items-center justify-center space-x-2 shadow-md"
               >
                 <FaUserFriends className="text-lg" />
@@ -229,7 +312,7 @@ function CreateTree() {
               </button>
               
               <button 
-                onClick={handleAddChild}
+                onClick={handleAddChildClick}
                 className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition duration-300 flex items-center justify-center space-x-2 shadow-md"
               >
                 <FaChild className="text-lg" />
@@ -237,6 +320,31 @@ function CreateTree() {
               </button>
             </div>
           </div>
+          
+          {showAddPersonForm && (
+            <AddPersonForm 
+              onAddPerson={handleAddPerson} 
+              onCancel={() => setShowAddPersonForm(false)}
+            />
+          )}
+          
+          {showAddSpouseForm && selectedNode && (
+            <AddSpouseForm 
+              existingPerson={selectedNode}
+              onAddSpouse={handleAddSpouse}
+              onCancel={() => setShowAddSpouseForm(false)}
+            />
+          )}
+          
+          {showAddChildForm && selectedNode && (
+  <AddChildForm 
+    selectedParent={selectedNode}
+    allNodes={diagramData.nodes}
+    allLinks={diagramData.links} // Passage des liens
+    onAddChild={handleAddChild}
+    onCancel={() => setShowAddChildForm(false)}
+  />
+)}
           
           {selectedNode && (
             <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
