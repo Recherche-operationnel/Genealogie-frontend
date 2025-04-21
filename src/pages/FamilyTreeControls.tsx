@@ -169,11 +169,15 @@ interface FamilyTreeControlsProps {
         <div>
           <h4 className="font-medium mb-2 text-gray-700">Algorithmes</h4>
           <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white">
-            <option value="">Sélectionner un algorithme</option>
-            <option value="ancestors">Rechercher les ancêtres</option>
-            <option value="descendants">Rechercher les descendants</option>
-            <option value="siblings">Rechercher les frères et sœurs</option>
-            <option value="cousins">Rechercher les cousins</option>
+          <option value="">Sélectionner un algorithme</option>
+
+  <option value="dfs">Parcours en profondeur (DFS)</option>
+  <option value="bfs">Parcours en largeur (BFS)</option>
+
+  <option value="dijkstra">Dijkstra</option>
+  <option value="bellman-ford">Bellman-Ford</option>
+  <option value="prim">Prim (Arbre couvrant minimum)</option>
+  <option value="kruskal">Kruskal (Arbre couvrant minimum)</option>
           </select>
         </div>
       </div>
