@@ -8,7 +8,7 @@ interface AddPersonFormProps {
 }
 
 export const AddPersonForm: React.FC<AddPersonFormProps> = ({ onAddPerson, onCancel }) => {
-  const [formData, setFormData] = useState<Omit<PersonNode, 'key'>>({
+  const [formData, setFormData] = useState<Omit<PersonNode, 'id'>>({
     nom: '',
     genre: 'M',
     dateNaissance: '',
@@ -20,7 +20,7 @@ export const AddPersonForm: React.FC<AddPersonFormProps> = ({ onAddPerson, onCan
     e.preventDefault();
     const newPerson: PersonNode = {
       ...formData,
-      key: Date.now() // Utilisation du timestamp comme ID temporaire
+      id: Date.now() // Utilisation du timestamp comme ID temporaire
     };
     onAddPerson(newPerson);
   };

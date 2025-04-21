@@ -1,14 +1,14 @@
 export interface PersonNode {
-  key: number;
+  id: number;
   nom: string;
   genre: 'M' | 'F';
   dateNaissance: string;
-  photo: string;
+  photo?:  File | string;
   details?: string;
 }
 
 export interface FamilyRelation {
-  type?: string
+  type: 'spouse' | 'child';
   from: number;
   to: number;
 }
@@ -23,6 +23,6 @@ export interface DiagramData {
   links: FamilyRelation[];
 }
 
-export type AddPersonHandler = (person: Omit<PersonNode, 'key'>) => void;
-export type AddSpouseHandler = (spouse: Omit<PersonNode, 'key'>, spouseOf: number) => void;
-export type AddChildHandler = (child: Omit<PersonNode, 'key'>, parentId: number) => void;
+export type AddPersonHandler = (person: Omit<PersonNode, 'id'>) => void;
+export type AddSpouseHandler = (spouse: Omit<PersonNode, 'id'>, spouseOf: number) => void;
+export type AddChildHandler = (child: Omit<PersonNode, 'id'>, parentId: number) => void;

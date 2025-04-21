@@ -12,7 +12,7 @@ export const AddSpouseForm: React.FC<AddSpouseFormProps> = ({
   onAddSpouse, 
   onCancel 
 }) => {
-  const [spouseData, setSpouseData] = useState<Omit<PersonNode, 'key'>>({
+  const [spouseData, setSpouseData] = useState<Omit<PersonNode, 'id'>>({
     nom: '',
     genre: existingPerson.genre === 'M' ? 'F' : 'M', // Genre opposé par défaut
     dateNaissance: '',
@@ -22,11 +22,12 @@ export const AddSpouseForm: React.FC<AddSpouseFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Ajout d'un conjoint");
     const newSpouse: PersonNode = {
       ...spouseData,
-      key: Date.now() // ID temporaire
+      id: Date.now() // ID temporaire
     };
-    onAddSpouse(newSpouse, existingPerson.key);
+    onAddSpouse(newSpouse, existingPerson.id);
   };
 
   return (
@@ -134,4 +135,4 @@ export const AddSpouseForm: React.FC<AddSpouseFormProps> = ({
       </form>
     </div>
   );
-};
+}; 
