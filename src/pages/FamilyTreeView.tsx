@@ -23,21 +23,25 @@ const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({
 
     const $ = go.GraphObject.make;
 
-    // Création du diagramme
     const diagram = $(go.Diagram, diagramRef.current, {
       initialContentAlignment: go.Spot.Center,
       'undoManager.isEnabled': true,
-      layout: $(go.TreeLayout, {
-        angle: 90,
-        layerSpacing: 70,
-        nodeSpacing: 40,
-        alternateAngle: 0,
-        alternateAlignment: go.TreeLayout.AlignmentStart,
-        alternateNodeSpacing: 20
+      'draggingTool.isEnabled': true,
+      'allowMove': true,
+      layout: $(go.ForceDirectedLayout, {
+        defaultSpringLength: 100,
+        defaultElectricalCharge: 150,
+        maxIterations: 200,
       }),
+      'InitialLayoutCompleted': e => {
+        e.diagram.nodes.each(n => {
+          if (!n.location.isReal()) {
+            n.location = new go.Point(Math.random() * 1000, Math.random() * 600);
+          }
+        });
+      }
     });
 
-    // Définition du template de nœud
     diagram.nodeTemplate = $(go.Node, "Vertical", {
       selectionAdorned: true,
       selectionChanged: node => {
@@ -46,24 +50,22 @@ const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({
       },
       mouseEnter: (e, node) => {
         const shape = node.findObject("SHAPE") as go.Shape;
-        if (shape) shape.fill = "#E2E8F0"; // gris clair sur hover
+        if (shape) shape.fill = "#E2E8F0";
       },
       mouseLeave: (e, node) => {
         const shape = node.findObject("SHAPE") as go.Shape;
-        if (shape) shape.fill = "#F7FAFC"; // réinitialisation à la couleur d'origine
+        if (shape) shape.fill = "#F7FAFC";
       }
     },
-      $(go.Panel, "Spot", 
-        // Zone transparente pour survol
+      $(go.Panel, "Spot",
         $(go.Shape, "Rectangle", {
           name: "HOVER",
           width: 100,
           height: 100,
-          fill: null, // Pas de remplissage
-          stroke: null, // Pas de bordure
+          fill: null,
+          stroke: null,
           alignment: go.Spot.Center,
           stretch: go.GraphObject.Fill,
-          // Superposition qui change de couleur sur hover
           mouseEnter: (e, shape) => { shape.fill = "#0000"; },
           mouseLeave: (e, shape) => { shape.fill = null; }
         }),
@@ -74,16 +76,15 @@ const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({
           fill: "#F7FAFC",
           strokeWidth: 2
         },
-          new go.Binding("stroke", "genre", genre => genre === "F" ? "#EC4899" : "#3B82F6") // rose ou bleu
+          new go.Binding("stroke", "genre", genre => genre === "F" ? "#EC4899" : "#3B82F6")
         ),
-        
         $(go.Picture, {
           width: 96,
           height: 96,
           imageStretch: go.GraphObject.UniformToFill,
           background: null,
           alignment: go.Spot.Center,
-        }, new go.Binding("source", "photo")) // Liens de l'image depuis les données
+        }, new go.Binding("source", "photo"))
       ),
       $(go.TextBlock, {
         margin: 5,
@@ -100,9 +101,8 @@ const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({
       }, new go.Binding("text", "dateNaissance"))
     );
 
-    // Définition du template de lien
     diagram.linkTemplate = $(go.Link, {
-      routing: go.Link.Orthogonal,
+      routing: go.Link.Normal,
       corner: 10,
       curve: go.Link.Bezier,
       layerName: 'Background',
@@ -118,11 +118,11 @@ const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({
       }, new go.Binding('fill', 'category', type => type === 'spouse' ? '#A855F7' : '#4A5568'))
     );
 
-    // Initialisation du modèle de données
     diagram.model = new go.GraphLinksModel({
       nodeDataArray: nodes.map(node => ({
         key: node.id,
-        ...node
+        ...node,
+        loc: `${Math.random() * 1000} ${Math.random() * 600}` // position aléatoire
       })),
       linkDataArray: links.map(link => ({
         key: `${link.from}-${link.to}-${link.type}`,
@@ -144,7 +144,8 @@ const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({
       diagramInstance.current.model = new go.GraphLinksModel({
         nodeDataArray: nodes.map(node => ({
           key: node.id,
-          ...node
+          ...node,
+          loc: `${Math.random() * 1000} ${Math.random() * 600}`
         })),
         linkDataArray: links.map(link => ({
           key: `${link.from}-${link.to}-${link.type}`,

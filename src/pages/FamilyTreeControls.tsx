@@ -18,6 +18,7 @@ interface FamilyTreeControlsProps {
   currentLayout: 'vertical' | 'horizontal' | 'radial';
 }
 
+
 const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
   selectedNode,
   nodes,
@@ -41,6 +42,18 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
     setShowAddChildForm(false);
     setShowEditForm(false);
   };
+  const [algorithm, setAlgorithm] = React.useState('');
+const [startNodeId, setStartNodeId] = React.useState('');
+const [endNodeId, setEndNodeId] = React.useState('');
+
+const handleRunAlgorithm = () => {
+  if (!startNodeId || !endNodeId || !algorithm) {
+    alert("Veuillez sélectionner un algorithme, un point de départ et un point d'arrivée.");
+    return;
+  }
+  console.log("Lancement de", algorithm, "de", startNodeId, "à", endNodeId);
+  // Tu peux ici appeler une fonction de résolution selon l'algo
+};
 
   const handleAddSpouseClick = () => {
     if (!selectedNode) {
@@ -123,6 +136,7 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
           existingPerson={selectedNode}
           onAddSpouse={(spouseData) => onAddSpouse(spouseData, selectedNode.id)}
           onCancel={() => setShowAddSpouseForm(false)}
+          allNodes={nodes}
         />
       )}
 
@@ -184,17 +198,39 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
         </div>
 
         <div>
-          <h4 className="font-medium mb-2 text-gray-700">Algorithmes</h4>
-          <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white">
-            <option value="">Sélectionner un algorithme</option>
-            <option value="dfs">Parcours en profondeur (DFS)</option>
-            <option value="bfs">Parcours en largeur (BFS)</option>
-            <option value="dijkstra">Dijkstra</option>
-            <option value="bellman-ford">Bellman-Ford</option>
-            <option value="prim">Prim (Arbre couvrant minimum)</option>
-            <option value="kruskal">Kruskal (Arbre couvrant minimum)</option>
-          </select>
-        </div>
+  <h4 className="font-medium mb-2 text-gray-700">Algorithmes</h4>
+
+  <select value={algorithm} onChange={(e) => setAlgorithm(e.target.value)} className="w-full mb-2 px-4 py-2 border border-gray-300 rounded-lg">
+    <option value="">Sélectionner un algorithme</option>
+    <option value="dfs">Parcours en profondeur (DFS)</option>
+    <option value="bfs">Parcours en largeur (BFS)</option>
+    <option value="dijkstra">Dijkstra</option>
+    <option value="bellman-ford">Bellman-Ford</option>
+    <option value="prim">Prim (Arbre couvrant minimum)</option>
+    <option value="kruskal">Kruskal (Arbre couvrant minimum)</option>
+  </select>
+
+  <select value={startNodeId} onChange={(e) => setStartNodeId(e.target.value)} className="w-full mb-2 px-4 py-2 border border-gray-300 rounded-lg">
+    <option value="">Nœud de départ</option>
+    {nodes.map((node) => (
+      <option key={node.id} value={node.id}>{node.nom}</option>
+    ))}
+  </select>
+
+  <select value={endNodeId} onChange={(e) => setEndNodeId(e.target.value)} className="w-full mb-2 px-4 py-2 border border-gray-300 rounded-lg">
+    <option value="">Nœud d'arrivée</option>
+    {nodes.map((node) => (
+      <option key={node.id} value={node.id}>{node.nom}</option>
+    ))}
+  </select>
+
+  <button
+    onClick={handleRunAlgorithm}
+    className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+  >
+    Lancer l'algorithme
+  </button>
+</div>
       </div>
     </div>
   );
