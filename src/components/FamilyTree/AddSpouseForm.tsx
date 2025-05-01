@@ -36,7 +36,7 @@ export const AddSpouseForm: React.FC<AddSpouseFormProps> = ({
         Ajouter un conjoint à {existingPerson.nom}
       </h3>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nom complet</label>
@@ -67,7 +67,10 @@ export const AddSpouseForm: React.FC<AddSpouseFormProps> = ({
               <input
                 type="date"
                 value={spouseData.dateNaissance}
-                onChange={(e) => setSpouseData({...spouseData, dateNaissance: e.target.value})}
+                onChange={
+                  (e) => setSpouseData({...spouseData, dateNaissance: e.target.value})
+                }
+                
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>

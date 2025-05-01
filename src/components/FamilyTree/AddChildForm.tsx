@@ -62,8 +62,9 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          setChildData({...childData, photo: event.target.result as string});
+        const file = e.target.files?.[0];
+        if (file) {
+          setChildData({...childData, photo: file}); // ici, stocke le File
         }
       };
       reader.readAsDataURL(file);
@@ -74,7 +75,7 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({
     <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
       <h3 className="text-xl font-semibold mb-4">Ajouter un enfant</h3>
       
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nom complet</label>

@@ -51,8 +51,9 @@ export const savePerson = async (personData: Omit<PersonNode, 'id'> | PersonNode
         
         // Upload séparé de la photo si nécessaire
         if (photo instanceof File) {
-            await uploadPersonPhoto(response.data.id, photo);
-        }
+            await uploadPersonPhoto(response.data.id, photo); // envoie directement le fichier
+          }
+          
         
         return response.data;
     } catch (error) {
@@ -61,13 +62,10 @@ export const savePerson = async (personData: Omit<PersonNode, 'id'> | PersonNode
     }
 };
 
-export const uploadPersonPhoto = async (personId: number, photoDataUrl: string) => {
+export const uploadPersonPhoto = async (personId: number, photoFile: File) => {
     try {
-      // Convertir data URL en Blob
-      const blob = await fetch(photoDataUrl).then(res => res.blob());
-  
       const formData = new FormData();
-      formData.append('photo', blob, `photo-${personId}.png`);
+      formData.append('photo', photoFile, photoFile.name);
   
       const response = await axios.post(`${API_URL}persons/${personId}/upload_photo/`, formData, {
         headers: {
@@ -81,6 +79,7 @@ export const uploadPersonPhoto = async (personId: number, photoDataUrl: string) 
       throw error;
     }
   };
+  
   
 
 export const saveRelation = async (relationData) => {
