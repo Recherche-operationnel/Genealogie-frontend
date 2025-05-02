@@ -4,7 +4,7 @@ import { PersonNode, FamilyRelation } from '../types/FamilyTypes';
 import { AddChildForm } from '../components/FamilyTree/AddChildForm';
 import { AddPersonForm } from '../components/FamilyTree/AddPersonForm';
 import { AddSpouseForm } from '../components/FamilyTree/AddSpouseForm';
-
+import  { useEffect, useRef } from 'react';
 interface FamilyTreeControlsProps {
   selectedNode: PersonNode | null;
   nodes: PersonNode[];
@@ -16,6 +16,7 @@ interface FamilyTreeControlsProps {
   onEditPerson: (updatedPerson: PersonNode) => void;
   onLayoutChange: (layout: 'vertical' | 'horizontal' | 'radial') => void;
   currentLayout: 'vertical' | 'horizontal' | 'radial';
+  diagramRef: React.RefObject<HTMLDivElement>;
 }
 
 
@@ -29,7 +30,8 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
   onDeletePerson,
   onEditPerson,
   onLayoutChange,
-  currentLayout
+  currentLayout,
+  diagramRef // On passe la ref ici
 }) => {
   const [showAddPersonForm, setShowAddPersonForm] = React.useState(false);
   const [showAddSpouseForm, setShowAddSpouseForm] = React.useState(false);
@@ -42,6 +44,7 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
     setShowAddChildForm(false);
     setShowEditForm(false);
   };
+  const [selectedNodeID, setSelectedNode] = React.useState(null);
   const [algorithm, setAlgorithm] = React.useState('');
 const [startNodeId, setStartNodeId] = React.useState('');
 const [endNodeId, setEndNodeId] = React.useState('');
@@ -54,6 +57,15 @@ const handleRunAlgorithm = () => {
   console.log("Lancement de", algorithm, "de", startNodeId, "à", endNodeId);
   // Tu peux ici appeler une fonction de résolution selon l'algo
 };
+const [searchText, setSearchText] = React.useState('');
+  const diagramInstance = useRef<go.Diagram | null>(null);
+  
+  const [isReady, setIsReady] = React.useState(false);
+
+
+  
+  
+  
 
   const handleAddSpouseClick = () => {
     if (!selectedNode) {
@@ -183,19 +195,7 @@ const handleRunAlgorithm = () => {
       )}
 
       <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-          <FaSearch className="mr-2 text-blue-600" />
-          Recherche
-        </h3>
-
-        <div className="relative mb-4">
-          <input
-            type="text"
-            placeholder="Rechercher une personne..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-          />
-          <FaSearch className="absolute right-3 top-3 text-gray-400" />
-        </div>
+       
 
         <div>
   <h4 className="font-medium mb-2 text-gray-700">Algorithmes</h4>

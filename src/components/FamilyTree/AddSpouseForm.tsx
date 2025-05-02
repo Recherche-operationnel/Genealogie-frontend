@@ -6,7 +6,6 @@ interface AddSpouseFormPropS {
   allNodes: PersonNode[];
   onAddSpouse: (spouse: PersonNode, existingPersonId: number, isExisting: boolean) => void;
   onCancel: () => void;
-  allPersons: PersonNode[];
 }
 
 export const AddSpouseForm: React.FC<AddSpouseFormPropS> = ({

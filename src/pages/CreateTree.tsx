@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { getFamilyTree, savePerson, saveRelation, deletePerson as apiDeletePerson, deleteRelation as apiDeleteRelation } from '../../api';
 import FamilyTreeView from './FamilyTreeView';
 import FamilyTreeControls from './FamilyTreeControls';
 import { PersonNode, FamilyRelation } from '../types/FamilyTypes';
+import { buildFamilyGraph, depthFirstSearch, breadthFirstSearch, dijkstraSearch } from '../algorithms/graphAlgorithms';
 
-const CreateTree: React.FC = () => {
+const FamilyTreeContainer: React.FC = () => {
+  const diagramRef = useRef<any>(null);
   const [selectedNode, setSelectedNode] = useState<PersonNode | null>(null);
   const [diagramData, setDiagramData] = useState<{
     nodes: PersonNode[];
@@ -12,7 +15,7 @@ const CreateTree: React.FC = () => {
   }>({ nodes: [], links: [] });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger les données depuis l'API Django
+  // Charger les données depuis l'API
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -27,6 +30,28 @@ const CreateTree: React.FC = () => {
     
     loadData();
   }, []);
+
+  // Implémentation des algorithmes de recherche
+  const onAlgorithmSearch = (startId: string, endId: string, algo: string): string[] => {
+    const graph = buildFamilyGraph(diagramData.nodes, diagramData.links);
+
+    switch (algo) {
+      case 'dfs':
+        console.log("Algorithm result:", startId, endId)
+        return depthFirstSearch(graph, startId, endId);
+        
+      case 'bfs':
+        
+        console.log("Algorithm result:", startId, endId)
+        return breadthFirstSearch(graph, startId, endId);
+      case 'dijkstra':
+        
+       console.log("Algorithm result:", startId, endId)
+        return dijkstraSearch(graph, startId, endId);
+      default:
+        return [];
+    }
+  };
 
   // Handler pour ajouter une nouvelle personne
   const handleAddPerson = async (newPerson: PersonNode) => {
@@ -131,6 +156,7 @@ const CreateTree: React.FC = () => {
             links={diagramData.links}
             onNodeSelect={setSelectedNode}
             isLoading={isLoading}
+            onAlgorithmSearch={onAlgorithmSearch}
           />
         </div>
         
@@ -148,4 +174,4 @@ const CreateTree: React.FC = () => {
   );
 };
 
-export default CreateTree;
+export default FamilyTreeContainer;

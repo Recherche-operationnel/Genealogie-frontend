@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PersonNode, FamilyRelation } from '../../types/FamilyTypes';
 
+
 interface AddChildFormProps {
   selectedParent: PersonNode;
   allNodes: PersonNode[];
@@ -40,7 +41,8 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedParents.length === 0) return;
-    
+    console.log("Données de l'enfant: ", childData);  // Log de débogage
+
     onAddChild(childData, selectedParents);
   };
 
@@ -56,20 +58,15 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({
       }
     });
   };
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          setChildData({...childData, photo: file}); // ici, stocke le File
-        }
-      };
-      reader.readAsDataURL(file);
+      const imageUrl = URL.createObjectURL(file);  // Crée une URL de l'objet
+      console.log("Image URL générée: ", imageUrl);
+      setChildData({...childData, photo: imageUrl});  // Mettez à jour l'état avec l'URL
     }
   };
+  
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
