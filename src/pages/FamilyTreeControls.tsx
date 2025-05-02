@@ -49,9 +49,14 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
 const [startNodeId, setStartNodeId] = React.useState('');
 const [endNodeId, setEndNodeId] = React.useState('');
 
-const handleRunAlgorithm = () => {
-  if (!startNodeId || !endNodeId || !algorithm) {
-    alert("Veuillez sélectionner un algorithme, un point de départ et un point d'arrivée.");
+const handleRunAlgorithm = async () => {
+  if (!startNodeId || !algorithm) {
+    alert("Veuillez sélectionner un algorithme et un point de départ.");
+    return;
+  }
+  
+  if (algorithm !== "prim" && !endNodeId) {
+    alert("Veuillez sélectionner un point d'arrivée.");
     return;
   }
   console.log("Lancement de", algorithm, "de", startNodeId, "à", endNodeId);

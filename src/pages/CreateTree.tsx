@@ -69,7 +69,19 @@ const FamilyTreeContainer: React.FC = () => {
   // Handler pour ajouter un conjoint
   const handleAddSpouse = async (spouseData: Omit<PersonNode, 'id'>, existingPersonId: number) => {
     try {
-      const newSpouse = await savePerson(spouseData);
+      // 1. Vérifit s'il existe un noeud avec les mêmes infos
+      const existingSpouseNode = diagramData.nodes.find(
+      node =>
+        node.nom === spouseData.nom &&
+        node.dateNaissance === spouseData.dateNaissance // ou autre critère unique
+      );
+
+      let newSpouse: PersonNode;
+      if (existingSpouseNode) {
+        newSpouse = existingSpouseNode;
+      }else{
+        newSpouse = await savePerson(spouseData);
+      }
       await saveRelation({
         from: existingPersonId,
         to: newSpouse.id,
@@ -77,7 +89,7 @@ const FamilyTreeContainer: React.FC = () => {
       });
 
       setDiagramData(prev => ({
-        nodes: [...prev.nodes, newSpouse],
+        nodes: existingSpouseNode? prev.nodes: [...prev.nodes, newSpouse],
         links: [...prev.links, {
           from: existingPersonId,
           to: newSpouse.id,
