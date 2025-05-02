@@ -4,6 +4,7 @@ import { PersonNode, FamilyRelation } from '../types/FamilyTypes';
 import { AddChildForm } from '../components/FamilyTree/AddChildForm';
 import { AddPersonForm } from '../components/FamilyTree/AddPersonForm';
 import { AddSpouseForm } from '../components/FamilyTree/AddSpouseForm';
+import { runPrimAlgorithm } from '../../api'; // Assurez-vous que le chemin est correct
 
 interface FamilyTreeControlsProps {
   selectedNode: PersonNode | null;
@@ -46,13 +47,36 @@ const FamilyTreeControls: React.FC<FamilyTreeControlsProps> = ({
 const [startNodeId, setStartNodeId] = React.useState('');
 const [endNodeId, setEndNodeId] = React.useState('');
 
-const handleRunAlgorithm = () => {
-  if (!startNodeId || !endNodeId || !algorithm) {
-    alert("Veuillez sélectionner un algorithme, un point de départ et un point d'arrivée.");
+const handleRunAlgorithm = async () => {
+  if (!startNodeId || !algorithm) {
+    alert("Veuillez sélectionner un algorithme et un point de départ.");
     return;
   }
-  console.log("Lancement de", algorithm, "de", startNodeId, "à", endNodeId);
-  // Tu peux ici appeler une fonction de résolution selon l'algo
+  
+  if (algorithm !== "prim" && !endNodeId) {
+    alert("Veuillez sélectionner un point d'arrivée.");
+    return;
+  }
+  
+  console.log("Lancement de", algorithm, "de", startNodeId, algorithm !== "prim" ? `à ${endNodeId}` : "");
+  
+  // Choix de l'algorithme à exécuter
+  switch (algorithm) {
+    case "prim":
+      const result_tree = await runPrimAlgorithm(startNodeId);
+      console.log("Résultat de Prim:", result_tree);
+      break;
+    // case "dijkstra":
+    //   // Votre fonction existante pour Dijkstra
+    //   result = await runDijkstraAlgorithm(startNodeId, endNodeId);
+    //   break;
+    // case "bellman-ford":  
+    //   // Votre fonction existante pour Bellman-Ford
+    // Autres algorithmes...
+    default:
+      alert("Algorithme non reconnu");
+      return;
+  } 
 };
 
   const handleAddSpouseClick = () => {

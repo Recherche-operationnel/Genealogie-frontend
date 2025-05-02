@@ -113,3 +113,24 @@ export const deleteRelation = async (relationId) => {
         throw error;
     }
 };
+
+export const runPrimAlgorithm = async (startNodeId) => {
+    try {
+      // Appel à l'API backend avec Axios
+      const response = await axios.get(`${API_URL}prim/${startNodeId}/`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      return response.data; 
+    } catch (error) {
+      if (error.request) {
+        console.error("Pas de réponse du serveur:", error.request);
+        // alert("Aucun lien entre sa famille et les autres familles.");
+      } else {
+        console.error("Erreur de configuration:", error.message);
+      }
+      return null;
+    }
+  };
